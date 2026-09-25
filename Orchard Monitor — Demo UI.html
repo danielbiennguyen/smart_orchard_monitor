@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orchard Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101913; --surface:#182219; --surface-2:#1f2c21; --line:#2b3a2c;
+  --leaf:#5FA777; --amber:#C98A3B; --alert:#C1523B;
+  --text:#EDF2E9; --text-muted:#93A395; --text-faint:#5f7263;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F3F1E8; --surface:#FFFFFF; --surface-2:#EBE7D8; --line:#DAD5C2;
+    --leaf:#3D7A54; --amber:#A66A22; --alert:#B03F2C;
+    --text:#1B221B; --text-muted:#5A6355; --text-faint:#8B9385;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F3F1E8; --surface:#FFFFFF; --surface-2:#EBE7D8; --line:#DAD5C2;
+  --leaf:#3D7A54; --amber:#A66A22; --alert:#B03F2C;
+  --text:#1B221B; --text-muted:#5A6355; --text-faint:#8B9385;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+*{box-sizing:border-box;}
+body{
+  margin:0; min-height:100%; background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+}
+.wrap{max-width:920px; margin:0 auto; padding:28px 20px 60px;}
+.top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
+.brand h1{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(26px,4vw,34px); margin:0 0 4px;}
+.orchard-picker{position:relative; display:block; margin-top:10px;}
+.orchard-current{display:block; color:var(--text-muted); font-size:14px; margin-bottom:7px;}
+.orchard-picker-toggle{display:flex; align-items:center; justify-content:space-between; gap:18px; margin:0; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--leaf); font:500 13px 'IBM Plex Sans',sans-serif; cursor:pointer; transition:border-color .2s ease, background .2s ease, transform .2s ease;}
+.orchard-picker-toggle:hover{border-color:var(--leaf); background:var(--surface-2);}
+.orchard-picker-toggle:focus-visible{outline:2px solid var(--leaf); outline-offset:2px;}
+.orchard-picker-toggle .chevron{font-size:16px; color:var(--leaf); transition:transform .2s ease;}
+.orchard-picker.open .chevron{transform:rotate(180deg);}
+.orchard-menu{position:absolute; z-index:5; top:calc(100% + 8px); left:0; min-width:190px; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 12px 30px rgba(0,0,0,.22);}
+.orchard-menu[hidden]{display:none;}
+.orchard-menu button{display:block; width:100%; padding:9px 10px; border:0; border-radius:5px; background:none; color:var(--text); text-align:left; font:13px 'IBM Plex Sans',sans-serif; cursor:pointer;}
+.orchard-menu button:hover,.orchard-menu button.active{background:var(--surface-2); color:var(--leaf);}
+.theme-toggle{background:none; border:1px solid var(--line); color:var(--text-muted); font-size:12px; padding:6px 10px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace;}
+
+.status-bar{
+  display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
+  border-radius:10px; padding:14px 18px; margin-bottom:8px; flex-wrap:wrap;
+}
+.dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+.dot.server{background:var(--leaf); box-shadow:0 0 0 4px rgba(95,167,119,.18);}
+.dot.direct{background:var(--amber); box-shadow:0 0 0 4px rgba(201,138,59,.18);}
+.dot.offline{background:var(--alert); box-shadow:0 0 0 4px rgba(193,82,59,.18);}
+.dot.syncing{background:var(--amber); animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.status-label{font-weight:600; font-size:14.5px;}
+.status-sub{color:var(--text-muted); font-size:13px;}
+.status-bar .spacer{flex:1;}
+.sync-toast{font-size:12.5px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+
+.demo-controls{
+  border:1px dashed var(--line); border-radius:10px; padding:10px 14px; margin-bottom:26px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px; color:var(--text-faint);
+}
+.demo-controls span.lbl{font-family:'IBM Plex Mono',monospace; text-transform:none;}
+.demo-controls button{
+  border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:12.5px;
+  padding:6px 12px; border-radius:20px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;
+}
+.demo-controls button.active{background:var(--leaf); border-color:var(--leaf); color:#0d1610;}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:22px;}
+.stat{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 16px 14px;}
+.stat .k{font-size:12.5px; color:var(--text-muted); margin-bottom:8px;}
+.stat .v{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:26px; line-height:1;}
+.stat .v span{font-size:14px; color:var(--text-faint); font-weight:500; margin-left:2px;}
+.stat.warn{border-color:var(--amber);}
+.stat.warn .v{color:var(--amber);}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 18px 12px; margin-bottom:16px;}
+.panel h2{font-family:'Fraunces',serif; font-weight:600; font-size:17px; margin:0 0 14px;}
+.chart-wrap{position:relative; height:180px;}
+
+.two-col{display:grid; grid-template-columns:1.4fr 1fr; gap:16px;}
+@media (max-width:640px){.two-col{grid-template-columns:1fr;}}
+
+.device-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px;}
+.device-row:last-child{border-bottom:none;}
+.device-row .k{color:var(--text-muted);}
+.device-row .v{font-family:'IBM Plex Mono',monospace;}
+.pending{color:var(--amber);}
+
+.threshold label{display:block; font-size:13px; color:var(--text-muted); margin:10px 0 6px;}
+.threshold input[type=range]{width:100%; accent-color:var(--leaf);}
+.threshold .row{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:13px;}
+.threshold small{color:var(--text-faint); display:block; margin-top:10px; font-size:12px; line-height:1.5;}
+
+.pump-panel .mode-switch{display:flex; gap:8px; margin-bottom:16px;}
+.pump-panel .mode-switch button{flex:1; padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); font-size:13.5px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;}
+.pump-panel .mode-switch button.active{background:var(--leaf); border-color:var(--leaf); color:#0d1610; font-weight:600;}
+.auto-desc{font-size:13.5px; color:var(--text-muted); line-height:1.6; margin:0 0 12px;}
+.pump-state{display:flex; align-items:center; gap:8px; font-size:14px;}
+.dot2{width:10px; height:10px; border-radius:50%; background:var(--text-faint); flex-shrink:0;}
+.dot2.on{background:var(--leaf); box-shadow:0 0 0 4px rgba(95,167,119,.18);}
+.pump-status-row{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:6px;}
+.pump-btn{padding:10px 22px; border-radius:24px; border:1px solid var(--line); background:var(--leaf); color:#0d1610; font-weight:600; cursor:pointer; font-size:14px; font-family:'IBM Plex Sans',sans-serif;}
+.pump-btn.on{background:var(--alert); border-color:var(--alert); color:#fff;}
+.pump-progress{height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-top:12px;}
+.pump-progress-bar{height:100%; background:var(--amber); width:0%; transition:width .3s linear;}
+.pump-note{font-size:12px; color:var(--text-faint); margin-top:10px; line-height:1.6;}
+
+.note{font-size:12.5px; color:var(--text-faint); line-height:1.7; margin-top:26px; border-top:1px solid var(--line); padding-top:14px;}
+.note ul{margin:8px 0 0; padding-left:18px;}
+.note li{margin-bottom:5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <h1>Orchard Monitor</h1>
+      <div class="orchard-picker" id="orchardPicker">
+        <span class="orchard-current" id="orchardName">Vườn vải</span>
+        <button class="orchard-picker-toggle" id="orchardPickerToggle" aria-haspopup="listbox" aria-expanded="false" aria-label="Thay đổi khu vực">
+          <span>Thay đổi khu vực</span><span class="chevron">⌄</span>
+        </button>
+        <div class="orchard-menu" id="orchardMenu" role="listbox" hidden>
+          <button type="button" data-orchard="vai" class="active" role="option">Vườn vải</button>
+          <button type="button" data-orchard="xoai" role="option">Vườn xoài</button>
+          <button type="button" data-orchard="cam" role="option">Vườn cam</button>
+        </div>
+      </div>
+    </div>
+    <button class="theme-toggle" id="themeBtn">Chế độ sáng</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="dot server" id="statusDot"></div>
+    <div>
+      <div class="status-label" id="statusLabel">Đang kết nối qua Server</div>
+      <div class="status-sub" id="statusSub">Cập nhật lần cuối: vừa xong</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="sync-toast" id="syncToast" style="display:none;">Đang đồng bộ dữ liệu tồn&hellip;</div>
+  </div>
+
+  <div class="demo-controls">
+    <span class="lbl">Mô phỏng trạng thái:</span>
+    <button data-mode="server" class="active">Server</button>
+    <button data-mode="direct">Direct (BLE)</button>
+    <button data-mode="offline">Mất kết nối</button>
+  </div>
+
+  <div class="grid" id="statGrid">
+    <div class="stat"><div class="k">Nhiệt độ</div><div class="v" id="vTemp">28.4<span>&deg;C</span></div></div>
+    <div class="stat"><div class="k">Độ ẩm không khí</div><div class="v" id="vHum">76<span>%</span></div></div>
+    <div class="stat"><div class="k">Độ ẩm đất</div><div class="v" id="vSoil">41<span>%</span></div></div>
+    <div class="stat"><div class="k">Ánh sáng (tương đối)*</div><div class="v" id="vLight">62<span>%</span></div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <h2>Lịch sử 24 mẫu gần nhất</h2>
+      <div class="chart-wrap"><canvas id="histChart"></canvas></div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2>Thiết bị</h2>
+        <div class="device-row"><span class="k">Pin</span><span class="v" id="vBattery">88%</span></div>
+        <div class="device-row"><span class="k">Chu kỳ lấy mẫu</span><span class="v">5 phút</span></div>
+        <div class="device-row"><span class="k">Bản ghi chờ đồng bộ</span><span class="v pending" id="vPending">0</span></div>
+      </div>
+
+      <div class="panel threshold">
+        <h2>Ngưỡng cảnh báo</h2>
+        <label for="rSoil">Độ ẩm đất tối thiểu</label>
+        <div class="row"><span id="soilThreshVal">30%</span></div>
+        <input type="range" id="rSoil" min="10" max="60" value="30">
+        <small>Cấu hình này được gửi xuống thiết bị qua API (Server Mode) hoặc trực tiếp qua BLE khi ở Direct Mode.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel pump-panel">
+    <h2>Điều khiển bơm nước (Relay 2 kênh)</h2>
+    <div class="mode-switch">
+      <button data-pumpmode="auto" class="active">Tự động</button>
+      <button data-pumpmode="manual">Thủ công</button>
+    </div>
+
+    <div id="autoView">
+      <p class="auto-desc">Bơm tự bật khi độ ẩm đất dưới ngưỡng đã cấu hình (<b id="autoThreshRef">30</b>%). Độ ẩm đất hiện tại: <b id="autoSoilRef">41</b>%.</p>
+      <div class="pump-state">
+        <div class="dot2" id="autoDot"></div>
+        <span id="autoStatusText">Đang chờ &mdash; độ ẩm đủ</span>
+      </div>
+    </div>
+
+    <div id="manualView" style="display:none;">
+      <div class="pump-status-row">
+        <div class="pump-state">
+          <div class="dot2" id="manualDot"></div>
+          <span id="manualStatusText">Bơm đang tắt</span>
+        </div>
+        <button class="pump-btn" id="pumpToggleBtn">Bật bơm</button>
+      </div>
+      <div class="pump-progress" id="pumpProgressWrap" style="display:none;">
+        <div class="pump-progress-bar" id="pumpProgressBar"></div>
+      </div>
+      <div class="pump-note" id="pumpTimerNote"></div>
+    </div>
+
+    <div class="pump-note">
+      An toàn: bơm thủ công cần xác nhận trước khi bật, và tự động tắt sau thời gian tối đa để tránh ngập úng nếu quên tắt.
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Giả định &amp; dữ liệu fake đã dùng trong bản demo này</strong> (cần A/B xác nhận lại):
+    <ul>
+      <li>Số liệu nhiệt độ/độ ẩm không khí (DHT20) hiển thị số thập phân theo đúng độ phân giải thật (0.01&deg;C / 0.024% RH), nhưng <b>giá trị cụ thể là random</b>, không phải đọc từ cảm biến thật.</li>
+      <li>Độ ẩm đất (LM393) và ánh sáng (photodiode) đang hiển thị dưới dạng <b>% giả định</b> vì 2 cảm biến này xuất tín hiệu analog thô (ADC 0&ndash;4095), <b>chưa có công thức hiệu chuẩn thật</b> &mdash; cần A đo giá trị ADC thực tế lúc khô/ướt, tối/sáng để thay vào.</li>
+      <li>Ngưỡng cảnh báo độ ẩm đất (slider) là placeholder UI, chưa gửi được xuống thiết bị/server thật (chưa nối API/BLE).</li>
+      <li>Pin hiển thị 88% là số cố định &mdash; chưa rõ nhóm dùng loại pin gì (Li-ion/solar/AA) nên chưa có logic tính % hay trạng thái sạc thật.</li>
+      <li>Mục &ldquo;Bản ghi chờ đồng bộ&rdquo; là số random khi chuyển sang Direct Mode, minh hoạ khái niệm &mdash; thực tế phải lấy từ firmware qua characteristic Status.</li>
+      <li><b>Điều khiển bơm hoàn toàn là mô phỏng phía UI:</b> chưa gửi lệnh thật xuống relay. Logic tự động (so sánh độ ẩm đất với ngưỡng) và logic an toàn (tự tắt sau thời gian tối đa) là <b>giả định của mình</b> &mdash; nhóm cần thống nhất lại với A xem firmware có tự xử lý logic auto này luôn không, hay App chỉ gửi lệnh bật/tắt thô và mọi an toàn/logic nằm ở firmware.</li>
+      <li>Thời gian tự tắt bơm demo rút gọn còn <b>15 giây</b> để xem hiệu ứng nhanh &mdash; thực tế nên là một khoảng phút do nhóm quyết định (ví dụ 10 phút).</li>
+      <li>Chưa có xác thực người dùng (đăng nhập) &mdash; giả định demo dùng chung 1 phiên, không phân quyền.</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+// ---------- theme toggle: đặt đầu tiên, độc lập với mọi phần khác ----------
+const themeBtn = document.getElementById('themeBtn');
+themeBtn.addEventListener('click', ()=>{
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  themeBtn.textContent = isLight ? 'Chế độ sáng' : 'Chế độ tối';
+});
+
+// ---------- dữ liệu giả lập ----------
+function genHistory(n, base, spread){
+  const arr=[];
+  for(let i=0;i<n;i++){ arr.push(+(base + (Math.random()-0.5)*spread).toFixed(1)); }
+  return arr;
+}
+const orchardData = {
+  vai: { name:'Vườn vải', temp:28.4, hum:76, soil:41, light:62, battery:88, threshold:30, historyBase:28.4 },
+  xoai: { name:'Vườn xoài', temp:30.1, hum:68, soil:34, light:78, battery:73, threshold:35, historyBase:30.1 },
+  cam: { name:'Vườn cam', temp:26.8, hum:82, soil:49, light:55, battery:94, threshold:32, historyBase:26.8 }
+};
+let selectedOrchard = 'vai';
+
+const labels = Array.from({length:24}, (_,i)=> {
+  const d = new Date(Date.now() - (23-i)*5*60000);
+  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+});
+Object.values(orchardData).forEach(orchard => {
+  orchard.history = genHistory(24, orchard.historyBase, 3);
+});
+
+const ctx = document.getElementById('histChart').getContext('2d');
+let chart;
+try {
+  chart = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{
+      data:orchardData[selectedOrchard].history, borderColor:'#5FA777', backgroundColor:'rgba(95,167,119,.12)',
+      fill:true, tension:.35, pointRadius:0, borderWidth:2
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{ color:'#8fa285', maxTicksLimit:6, font:{family:'IBM Plex Mono', size:10} }, grid:{ display:false } },
+        y:{ ticks:{ color:'#8fa285', font:{family:'IBM Plex Mono', size:10} }, grid:{ color:'rgba(120,140,120,.12)' } }
+      }
+    }
+  });
+} catch(e) {
+  // Nếu Chart.js không load được (mạng/CDN chặn), không để lỗi này
+  // làm hỏng các phần tương tác còn lại của trang (theme, pump...)
+  console.error('Không vẽ được biểu đồ lịch sử:', e);
+  ctx.canvas.insertAdjacentHTML('afterend',
+    '<div style="font-size:12.5px;color:var(--text-faint);padding:8px 0;">Không tải được thư viện biểu đồ (kiểm tra kết nối mạng).</div>');
+}
+
+const orchardPicker = document.getElementById('orchardPicker');
+const orchardPickerToggle = document.getElementById('orchardPickerToggle');
+const orchardMenu = document.getElementById('orchardMenu');
+const orchardName = document.getElementById('orchardName');
+const orchardButtons = orchardMenu.querySelectorAll('button');
+
+function updateDashboardForOrchard(){
+  const orchard = orchardData[selectedOrchard];
+  orchardName.textContent = orchard.name;
+  document.getElementById('vTemp').innerHTML = orchard.temp.toFixed(1)+'<span>&deg;C</span>';
+  document.getElementById('vHum').innerHTML = orchard.hum+'<span>%</span>';
+  document.getElementById('vSoil').innerHTML = orchard.soil+'<span>%</span>';
+  document.getElementById('vLight').innerHTML = orchard.light+'<span>%</span>';
+  document.getElementById('vBattery').textContent = orchard.battery+'%';
+  rSoil.value = orchard.threshold;
+  soilVal.textContent = orchard.threshold+'%';
+  lastSoilValue = orchard.soil;
+  autoSoilRef.textContent = orchard.soil;
+  updateAutoPumpStatus(orchard.soil);
+  orchardButtons.forEach(button => button.classList.toggle('active', button.dataset.orchard === selectedOrchard));
+  if(chart){
+    chart.data.datasets[0].data = orchard.history;
+    chart.update();
+  }
+}
+
+function closeOrchardMenu(){
+  orchardMenu.hidden = true;
+  orchardPicker.classList.remove('open');
+  orchardPickerToggle.setAttribute('aria-expanded','false');
+}
+
+orchardPickerToggle.addEventListener('click', ()=>{
+  orchardMenu.hidden = !orchardMenu.hidden;
+  orchardPicker.classList.toggle('open', !orchardMenu.hidden);
+  orchardPickerToggle.setAttribute('aria-expanded', String(!orchardMenu.hidden));
+});
+
+orchardButtons.forEach(button => button.addEventListener('click', ()=>{
+  selectedOrchard = button.dataset.orchard;
+  updateDashboardForOrchard();
+  closeOrchardMenu();
+}));
+
+document.addEventListener('click', event => {
+  if(!orchardPicker.contains(event.target)) closeOrchardMenu();
+});
+
+// ---------- mô phỏng đổi mode ----------
+const dot = document.getElementById('statusDot');
+const label = document.getElementById('statusLabel');
+const sub = document.getElementById('statusSub');
+const toast = document.getElementById('syncToast');
+const pendingEl = document.getElementById('vPending');
+const buttons = document.querySelectorAll('.demo-controls button');
+
+const modeInfo = {
+  server:  { dotClass:'server',  label:'Đang kết nối qua Server',        sub:'Cập nhật lần cuối: vừa xong' },
+  direct:  { dotClass:'direct',  label:'Kết nối trực tiếp (BLE)',         sub:'Không có Server &mdash; xem dữ liệu tức thời từ thiết bị' },
+  offline: { dotClass:'offline', label:'Mất kết nối',                     sub:'Không tìm thấy Server lẫn thiết bị BLE trong phạm vi' },
+};
+
+let currentMode = 'server';
+
+function setMode(mode){
+  const wasDirect = currentMode === 'direct';
+  currentMode = mode;
+  buttons.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  dot.className = 'dot ' + modeInfo[mode].dotClass;
+  label.textContent = modeInfo[mode].label;
+  sub.innerHTML = modeInfo[mode].sub;
+
+  if(mode === 'direct'){
+    pendingEl.textContent = (3 + Math.floor(Math.random()*5)).toString();
+  }
+  if(mode === 'server' && wasDirect){
+    // mô phỏng đồng bộ khi server sống lại sau khi ở Direct Mode
+    dot.className = 'dot syncing';
+    label.textContent = 'Đang đồng bộ dữ liệu tồn';
+    toast.style.display = 'block';
+    setTimeout(()=>{
+      dot.className = 'dot server';
+      label.textContent = modeInfo.server.label;
+      sub.textContent = modeInfo.server.sub;
+      toast.style.display = 'none';
+      pendingEl.textContent = '0';
+    }, 1800);
+  } else if(mode !== 'direct'){
+    pendingEl.textContent = '0';
+  }
+}
+
+buttons.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
+
+// ---------- ngưỡng cảnh báo (khai báo trước vì cần dùng trong vòng lặp bên dưới) ----------
+const rSoil = document.getElementById('rSoil');
+const soilVal = document.getElementById('soilThreshVal');
+
+// ---------- cập nhật số liệu giả định kỳ (chỉ khi ở Server/Direct) ----------
+let lastSoilValue = orchardData[selectedOrchard].soil;
+setInterval(()=>{
+  if(currentMode === 'offline') return;
+  const orchard = orchardData[selectedOrchard];
+  document.getElementById('vTemp').innerHTML = (orchard.temp-1+Math.random()*2).toFixed(1)+'<span>&deg;C</span>';
+  document.getElementById('vHum').innerHTML = Math.round(orchard.hum-4+Math.random()*8)+'<span>%</span>';
+  const soilNow = Math.max(0, Math.min(100, Math.round(orchard.soil-5+Math.random()*10)));
+  document.getElementById('vSoil').innerHTML = soilNow+'<span>%</span>';
+  document.getElementById('vLight').innerHTML = Math.round(orchard.light-6+Math.random()*12)+'<span>%</span>';
+  lastSoilValue = soilNow;
+  updateAutoPumpStatus(soilNow);
+}, 4000);
+
+rSoil.addEventListener('input', ()=>{
+  soilVal.textContent = rSoil.value + '%';
+  updateAutoPumpStatus(lastSoilValue);
+});
+
+// ---------- điều khiển bơm nước (mô phỏng UI, chưa gửi lệnh thật) ----------
+const pumpModeButtons = document.querySelectorAll('.mode-switch button');
+const autoView = document.getElementById('autoView');
+const manualView = document.getElementById('manualView');
+const autoDot = document.getElementById('autoDot');
+const autoStatusText = document.getElementById('autoStatusText');
+const autoSoilRef = document.getElementById('autoSoilRef');
+const autoThreshRef = document.getElementById('autoThreshRef');
+const pumpToggleBtn = document.getElementById('pumpToggleBtn');
+const manualDot = document.getElementById('manualDot');
+const manualStatusText = document.getElementById('manualStatusText');
+const progressWrap = document.getElementById('pumpProgressWrap');
+const progressBar = document.getElementById('pumpProgressBar');
+const timerNote = document.getElementById('pumpTimerNote');
+
+let pumpMode = 'auto';
+let pumpOn = false;
+let pumpTimer = null;
+let pumpElapsed = 0;
+const PUMP_MAX_SECONDS = 15; // demo rút gọn — thực tế nên là vài phút, do nhóm quyết định
+
+pumpModeButtons.forEach(b=>{
+  b.addEventListener('click', ()=>{
+    pumpModeButtons.forEach(x=>x.classList.toggle('active', x===b));
+    pumpMode = b.dataset.pumpmode;
+    autoView.style.display = pumpMode==='auto' ? 'block':'none';
+    manualView.style.display = pumpMode==='manual' ? 'block':'none';
+    if(pumpMode==='auto' && pumpOn){ stopPump(false); }
+  });
+});
+
+pumpToggleBtn.addEventListener('click', ()=>{
+  if(!pumpOn){
+    const ok = confirm('Xác nhận bật bơm nước thủ công?');
+    if(!ok) return;
+    startPump();
+  } else {
+    stopPump(false);
+  }
+});
+
+function startPump(){
+  pumpOn = true;
+  pumpElapsed = 0;
+  pumpToggleBtn.textContent = 'Tắt bơm';
+  pumpToggleBtn.classList.add('on');
+  manualDot.classList.add('on');
+  manualStatusText.textContent = 'Bơm đang chạy';
+  progressWrap.style.display = 'block';
+  pumpTimer = setInterval(()=>{
+    pumpElapsed++;
+    const pct = Math.min(100, (pumpElapsed/PUMP_MAX_SECONDS)*100);
+    progressBar.style.width = pct+'%';
+    timerNote.textContent = 'Đã chạy '+pumpElapsed+'s / tự tắt sau '+PUMP_MAX_SECONDS+'s (demo rút gọn thời gian an toàn)';
+    if(pumpElapsed >= PUMP_MAX_SECONDS){ stopPump(true); }
+  }, 1000);
+}
+
+function stopPump(isAuto){
+  clearInterval(pumpTimer);
+  pumpOn = false;
+  pumpToggleBtn.textContent = 'Bật bơm';
+  pumpToggleBtn.classList.remove('on');
+  manualDot.classList.remove('on');
+  manualStatusText.textContent = isAuto ? 'Bơm đã tự tắt (hết thời gian an toàn)' : 'Bơm đang tắt';
+  progressWrap.style.display = 'none';
+  progressBar.style.width = '0%';
+  timerNote.textContent = '';
+}
+
+function updateAutoPumpStatus(soilValue){
+  autoSoilRef.textContent = soilValue;
+  const threshold = parseInt(rSoil.value, 10);
+  autoThreshRef.textContent = threshold;
+  if(pumpMode === 'auto'){
+    if(soilValue < threshold){
+      autoDot.classList.add('on');
+      autoStatusText.textContent = 'Đang bơm — độ ẩm đất dưới ngưỡng';
+    } else {
+      autoDot.classList.remove('on');
+      autoStatusText.textContent = 'Đang chờ — độ ẩm đủ';
+    }
+  }
+}
+</script>
+</body>
+</html>
