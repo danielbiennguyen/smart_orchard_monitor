@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orchard Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101913; --surface:#182219; --surface-2:#1f2c21; --line:#2b3a2c;
+  --leaf:#5FA777; --amber:#C98A3B; --alert:#C1523B;
+  --text:#EDF2E9; --text-muted:#93A395; --text-faint:#5f7263;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F3F1E8; --surface:#FFFFFF; --surface-2:#EBE7D8; --line:#DAD5C2;
+    --leaf:#3D7A54; --amber:#A66A22; --alert:#B03F2C;
+    --text:#1B221B; --text-muted:#5A6355; --text-faint:#8B9385;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F3F1E8; --surface:#FFFFFF; --surface-2:#EBE7D8; --line:#DAD5C2;
+  --leaf:#3D7A54; --amber:#A66A22; --alert:#B03F2C;
+  --text:#1B221B; --text-muted:#5A6355; --text-faint:#8B9385;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+*{box-sizing:border-box;}
+body{
+  margin:0; min-height:100%; background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+}
+.wrap{max-width:920px; margin:0 auto; padding:28px 20px 60px;}
+.top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
+.brand h1{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(26px,4vw,34px); margin:0 0 4px;}
+.brand p{margin:0; color:var(--text-muted); font-size:14px;}
+.theme-toggle{background:none; border:1px solid var(--line); color:var(--text-muted); font-size:12px; padding:6px 10px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace;}
+
+.status-bar{
+  display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
+  border-radius:10px; padding:14px 18px; margin-bottom:8px; flex-wrap:wrap;
+}
+.dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+.dot.server{background:var(--leaf); box-shadow:0 0 0 4px rgba(95,167,119,.18);}
+.dot.direct{background:var(--amber); box-shadow:0 0 0 4px rgba(201,138,59,.18);}
+.dot.offline{background:var(--alert); box-shadow:0 0 0 4px rgba(193,82,59,.18);}
+.dot.syncing{background:var(--amber); animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.status-label{font-weight:600; font-size:14.5px;}
+.status-sub{color:var(--text-muted); font-size:13px;}
+.status-bar .spacer{flex:1;}
+.sync-toast{font-size:12.5px; color:var(--amber); font-family:'IBM Plex Mono',monospace;}
+
+.demo-controls{
+  border:1px dashed var(--line); border-radius:10px; padding:10px 14px; margin-bottom:26px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px; color:var(--text-faint);
+}
+.demo-controls span.lbl{font-family:'IBM Plex Mono',monospace; text-transform:none;}
+.demo-controls button{
+  border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:12.5px;
+  padding:6px 12px; border-radius:20px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;
+}
+.demo-controls button.active{background:var(--leaf); border-color:var(--leaf); color:#0d1610;}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:22px;}
+.stat{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 16px 14px;}
+.stat .k{font-size:12.5px; color:var(--text-muted); margin-bottom:8px;}
+.stat .v{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:26px; line-height:1;}
+.stat .v span{font-size:14px; color:var(--text-faint); font-weight:500; margin-left:2px;}
+.stat.warn{border-color:var(--amber);}
+.stat.warn .v{color:var(--amber);}
+
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 18px 12px; margin-bottom:16px;}
+.panel h2{font-family:'Fraunces',serif; font-weight:600; font-size:17px; margin:0 0 14px;}
+.chart-wrap{position:relative; height:180px;}
+
+.two-col{display:grid; grid-template-columns:1.4fr 1fr; gap:16px;}
+@media (max-width:640px){.two-col{grid-template-columns:1fr;}}
+
+.device-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px;}
+.device-row:last-child{border-bottom:none;}
+.device-row .k{color:var(--text-muted);}
+.device-row .v{font-family:'IBM Plex Mono',monospace;}
+.pending{color:var(--amber);}
+
+.threshold label{display:block; font-size:13px; color:var(--text-muted); margin:10px 0 6px;}
+.threshold input[type=range]{width:100%; accent-color:var(--leaf);}
+.threshold .row{display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:13px;}
+.threshold small{color:var(--text-faint); display:block; margin-top:10px; font-size:12px; line-height:1.5;}
+
+.note{font-size:12.5px; color:var(--text-faint); line-height:1.6; margin-top:26px; border-top:1px solid var(--line); padding-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <h1>Orchard Monitor</h1>
+      <p>Vườn vải &mdash; Node 01</p>
+    </div>
+    <button class="theme-toggle" id="themeBtn">Chế độ sáng</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="dot server" id="statusDot"></div>
+    <div>
+      <div class="status-label" id="statusLabel">Đang kết nối qua Server</div>
+      <div class="status-sub" id="statusSub">Cập nhật lần cuối: vừa xong</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="sync-toast" id="syncToast" style="display:none;">Đang đồng bộ dữ liệu tồn&hellip;</div>
+  </div>
+
+  <div class="demo-controls">
+    <span class="lbl">Mô phỏng trạng thái:</span>
+    <button data-mode="server" class="active">Server</button>
+    <button data-mode="direct">Direct (BLE)</button>
+    <button data-mode="offline">Mất kết nối</button>
+  </div>
+
+  <div class="grid" id="statGrid">
+    <div class="stat"><div class="k">Nhiệt độ</div><div class="v" id="vTemp">28.4<span>&deg;C</span></div></div>
+    <div class="stat"><div class="k">Độ ẩm không khí</div><div class="v" id="vHum">76<span>%</span></div></div>
+    <div class="stat"><div class="k">Độ ẩm đất</div><div class="v" id="vSoil">41<span>%</span></div></div>
+    <div class="stat"><div class="k">Ánh sáng</div><div class="v" id="vLight">312<span>lux</span></div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <h2>Lịch sử 24 mẫu gần nhất</h2>
+      <div class="chart-wrap"><canvas id="histChart"></canvas></div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2>Thiết bị</h2>
+        <div class="device-row"><span class="k">Pin</span><span class="v" id="vBattery">88%</span></div>
+        <div class="device-row"><span class="k">Chu kỳ lấy mẫu</span><span class="v">5 phút</span></div>
+        <div class="device-row"><span class="k">Bản ghi chờ đồng bộ</span><span class="v pending" id="vPending">0</span></div>
+      </div>
+
+      <div class="panel threshold">
+        <h2>Ngưỡng cảnh báo</h2>
+        <label for="rSoil">Độ ẩm đất tối thiểu</label>
+        <div class="row"><span id="soilThreshVal">30%</span></div>
+        <input type="range" id="rSoil" min="10" max="60" value="30">
+        <small>Cấu hình này được gửi xuống thiết bị qua API (Server Mode) hoặc trực tiếp qua BLE khi ở Direct Mode.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    Demo dùng dữ liệu giả lập, không kết nối cảm biến/thiết bị thật. Nút &ldquo;Mô phỏng trạng thái&rdquo; ở trên minh hoạ cách giao diện phản ứng khi chuyển giữa Server Mode, Direct Mode (BLE) và mất kết nối &mdash; đúng luồng mô tả trong PRD ở Giai đoạn 4.
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+// ---------- dữ liệu giả lập ----------
+function genHistory(n, base, spread){
+  const arr=[];
+  for(let i=0;i<n;i++){ arr.push(+(base + (Math.random()-0.5)*spread).toFixed(1)); }
+  return arr;
+}
+const labels = Array.from({length:24}, (_,i)=> {
+  const d = new Date(Date.now() - (23-i)*5*60000);
+  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+});
+const tempData = genHistory(24, 28, 3);
+
+const ctx = document.getElementById('histChart').getContext('2d');
+const chart = new Chart(ctx, {
+  type:'line',
+  data:{ labels, datasets:[{
+    data:tempData, borderColor:'#5FA777', backgroundColor:'rgba(95,167,119,.12)',
+    fill:true, tension:.35, pointRadius:0, borderWidth:2
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ ticks:{ color:'#8fa285', maxTicksLimit:6, font:{family:'IBM Plex Mono', size:10} }, grid:{ display:false } },
+      y:{ ticks:{ color:'#8fa285', font:{family:'IBM Plex Mono', size:10} }, grid:{ color:'rgba(120,140,120,.12)' } }
+    }
+  }
+});
+
+// ---------- mô phỏng đổi mode ----------
+const dot = document.getElementById('statusDot');
+const label = document.getElementById('statusLabel');
+const sub = document.getElementById('statusSub');
+const toast = document.getElementById('syncToast');
+const pendingEl = document.getElementById('vPending');
+const buttons = document.querySelectorAll('.demo-controls button');
+
+const modeInfo = {
+  server:  { dotClass:'server',  label:'Đang kết nối qua Server',        sub:'Cập nhật lần cuối: vừa xong' },
+  direct:  { dotClass:'direct',  label:'Kết nối trực tiếp (BLE)',         sub:'Không có Server &mdash; xem dữ liệu tức thời từ thiết bị' },
+  offline: { dotClass:'offline', label:'Mất kết nối',                     sub:'Không tìm thấy Server lẫn thiết bị BLE trong phạm vi' },
+};
+
+let currentMode = 'server';
+
+function setMode(mode){
+  const wasDirect = currentMode === 'direct';
+  currentMode = mode;
+  buttons.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  dot.className = 'dot ' + modeInfo[mode].dotClass;
+  label.textContent = modeInfo[mode].label;
+  sub.innerHTML = modeInfo[mode].sub;
+
+  if(mode === 'direct'){
+    pendingEl.textContent = (3 + Math.floor(Math.random()*5)).toString();
+  }
+  if(mode === 'server' && wasDirect){
+    // mô phỏng đồng bộ khi server sống lại sau khi ở Direct Mode
+    dot.className = 'dot syncing';
+    label.textContent = 'Đang đồng bộ dữ liệu tồn';
+    toast.style.display = 'block';
+    setTimeout(()=>{
+      dot.className = 'dot server';
+      label.textContent = modeInfo.server.label;
+      sub.textContent = modeInfo.server.sub;
+      toast.style.display = 'none';
+      pendingEl.textContent = '0';
+    }, 1800);
+  } else if(mode !== 'direct'){
+    pendingEl.textContent = '0';
+  }
+}
+
+buttons.forEach(b => b.addEventListener('click', ()=> setMode(b.dataset.mode)));
+
+// ---------- cập nhật số liệu giả định kỳ (chỉ khi ở Server/Direct) ----------
+setInterval(()=>{
+  if(currentMode === 'offline') return;
+  document.getElementById('vTemp').innerHTML = (27+Math.random()*3).toFixed(1)+'<span>&deg;C</span>';
+  document.getElementById('vHum').innerHTML = Math.round(70+Math.random()*10)+'<span>%</span>';
+  document.getElementById('vSoil').innerHTML = Math.round(35+Math.random()*12)+'<span>%</span>';
+  document.getElementById('vLight').innerHTML = Math.round(280+Math.random()*80)+'<span>lux</span>';
+}, 4000);
+
+// ---------- ngưỡng cảnh báo ----------
+const rSoil = document.getElementById('rSoil');
+const soilVal = document.getElementById('soilThreshVal');
+rSoil.addEventListener('input', ()=> soilVal.textContent = rSoil.value + '%');
+
+// ---------- theme toggle (chỉ đổi giao diện demo, không phải yêu cầu PRD) ----------
+const themeBtn = document.getElementById('themeBtn');
+themeBtn.addEventListener('click', ()=>{
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  themeBtn.textContent = isLight ? 'Chế độ sáng' : 'Chế độ tối';
+});
+</script>
+</body>
+</html>
