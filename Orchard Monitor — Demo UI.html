@@ -34,18 +34,46 @@ body{
 .wrap{max-width:920px; margin:0 auto; padding:28px 20px 60px;}
 .top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
 .brand h1{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(26px,4vw,34px); margin:0 0 4px;}
-.orchard-picker{position:relative; display:block; margin-top:10px;}
-.orchard-current{display:block; color:var(--text-muted); font-size:14px; margin-bottom:7px;}
-.orchard-picker-toggle{display:flex; align-items:center; justify-content:space-between; gap:18px; margin:0; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--leaf); font:500 13px 'IBM Plex Sans',sans-serif; cursor:pointer; transition:border-color .2s ease, background .2s ease, transform .2s ease;}
+.orchard-picker{position:relative; display:block; margin-top:12px;}
+.orchard-current{display:block; color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:22px; font-weight:600; line-height:1.2; margin:0 0 10px;}
+.orchard-picker-toggle{display:flex; align-items:center; justify-content:center; gap:18px; width:max-content; margin:0; padding:7px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--leaf); font:500 13px 'IBM Plex Sans',sans-serif; cursor:pointer; transition:border-color .2s ease, background .2s ease, transform .2s ease;}
 .orchard-picker-toggle:hover{border-color:var(--leaf); background:var(--surface-2);}
 .orchard-picker-toggle:focus-visible{outline:2px solid var(--leaf); outline-offset:2px;}
-.orchard-picker-toggle .chevron{font-size:16px; color:var(--leaf); transition:transform .2s ease;}
-.orchard-picker.open .chevron{transform:rotate(180deg);}
 .orchard-menu{position:absolute; z-index:5; top:calc(100% + 8px); left:0; min-width:190px; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 12px 30px rgba(0,0,0,.22);}
 .orchard-menu[hidden]{display:none;}
 .orchard-menu button{display:block; width:100%; padding:9px 10px; border:0; border-radius:5px; background:none; color:var(--text); text-align:left; font:13px 'IBM Plex Sans',sans-serif; cursor:pointer;}
 .orchard-menu button:hover,.orchard-menu button.active{background:var(--surface-2); color:var(--leaf);}
 .theme-toggle{background:none; border:1px solid var(--line); color:var(--text-muted); font-size:12px; padding:6px 10px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace;}
+.logout-button{background:none; border:1px solid var(--line); color:var(--text-muted); font-size:12px; padding:6px 10px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace;}
+.top-actions{display:flex; gap:8px; align-items:center;}
+
+.login-screen{min-height:100vh; display:grid; place-items:center; padding:24px; background:var(--bg);}
+.login-screen[hidden]{display:none;}
+.login-card{width:min(100%,400px); background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:28px; box-shadow:0 18px 50px rgba(0,0,0,.2);}
+.login-card h1{font-family:'Fraunces',serif; font-size:30px; margin:0 0 6px;}
+.login-card > p{margin:0 0 24px; color:var(--text-muted); font-size:14px; line-height:1.5;}
+.auth-tabs{display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px; margin-bottom:22px; background:var(--surface-2); border-radius:8px;}
+.auth-tabs button{padding:8px; border:0; border-radius:6px; background:transparent; color:var(--text-muted); font:500 13px 'IBM Plex Sans',sans-serif; cursor:pointer;}
+.auth-tabs button.active{background:var(--surface); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.16);}
+.login-form label{display:block; margin:0 0 6px; color:var(--text-muted); font-size:13px;}
+.password-field{position:relative; margin-bottom:14px;}
+.password-field input{width:100%; margin:0; padding:10px 42px 10px 11px; border:1px solid var(--line); border-radius:7px; background:var(--surface-2); color:var(--text); font:14px 'IBM Plex Sans',sans-serif;}
+.password-toggle{position:absolute; top:50%; right:8px; display:grid; place-items:center; width:28px; height:28px; transform:translateY(-50%); border:0; border-radius:5px; background:none; color:var(--text-muted); cursor:pointer; font-size:16px;}
+.password-toggle:hover{background:var(--line); color:var(--text);}
+.password-toggle:focus-visible{outline:2px solid var(--leaf); outline-offset:1px;}
+.eye-icon{display:block; width:19px; height:19px;}
+.eye-icon path,.eye-icon circle{vector-effect:non-scaling-stroke;}
+.eye-slash{transition:opacity .15s ease;}
+.password-toggle:not(.is-hidden) .eye-slash{opacity:0;}
+.login-form input{width:100%; margin:0 0 14px; padding:10px 11px; border:1px solid var(--line); border-radius:7px; background:var(--surface-2); color:var(--text); font:14px 'IBM Plex Sans',sans-serif;}
+.password-field input{margin:0; padding:10px 42px 10px 11px;}
+.login-form input:focus{outline:2px solid var(--leaf); outline-offset:1px;}
+.confirm-field[hidden]{display:none;}
+.login-submit{width:100%; padding:10px 14px; border:1px solid var(--leaf); border-radius:7px; background:var(--leaf); color:#0d1610; font:600 14px 'IBM Plex Sans',sans-serif; cursor:pointer;}
+.login-submit:hover{filter:brightness(1.08);}
+.login-error{min-height:18px; margin:0 0 10px; color:var(--alert); font-size:12.5px;}
+.login-demo{margin:16px 0 0; color:var(--text-faint); font:11.5px 'IBM Plex Mono',monospace; text-align:center;}
+.demo-fill{display:block; margin:8px auto 0; padding:0; border:0; background:none; color:var(--leaf); font:12px 'IBM Plex Sans',sans-serif; text-decoration:underline; cursor:pointer;}
 
 .status-bar{
   display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
@@ -83,9 +111,14 @@ body{
 
 .panel{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 18px 12px; margin-bottom:16px;}
 .panel h2{font-family:'Fraunces',serif; font-weight:600; font-size:17px; margin:0 0 14px;}
-.chart-wrap{position:relative; height:180px;}
+.chart-wrap{position:relative; width:100%; min-width:0; height:180px; overflow:hidden;}
+.chart-wrap canvas{display:block; width:100%; height:100%; max-width:100%;}
+.metric-switch{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:12px;}
+.metric-switch button{min-width:0; padding:7px 5px; border:1px solid var(--line); border-radius:6px; background:var(--surface-2); color:var(--text-muted); font:12px 'IBM Plex Sans',sans-serif; cursor:pointer;}
+.metric-switch button.active{border-color:var(--leaf); background:var(--leaf); color:#0d1610; font-weight:600;}
 
 .two-col{display:grid; grid-template-columns:1.4fr 1fr; gap:16px;}
+.two-col > *{min-width:0;}
 @media (max-width:640px){.two-col{grid-template-columns:1fr;}}
 
 .device-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px;}
@@ -119,7 +152,50 @@ body{
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="login-screen" id="loginScreen">
+  <section class="login-card" aria-labelledby="loginTitle">
+    <h1 id="loginTitle">Orchard Monitor</h1>
+    <p id="authDescription">Đăng nhập để truy cập dịch vụ giám sát khu vườn.</p>
+    <div class="auth-tabs" role="tablist" aria-label="Xác thực tài khoản">
+      <button type="button" id="loginTab" class="active" role="tab" aria-selected="true">Đăng nhập</button>
+      <button type="button" id="registerTab" role="tab" aria-selected="false">Đăng ký</button>
+    </div>
+    <form class="login-form" id="loginForm">
+      <label for="loginUsername">Tài khoản</label>
+      <input id="loginUsername" name="username" type="text" autocomplete="username" minlength="3" required>
+      <label for="loginPassword">Mật khẩu</label>
+      <div class="password-field">
+        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        <button class="password-toggle is-hidden" id="passwordToggle" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+          <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2.5 12s3.4-5.2 9.5-5.2S21.5 12 21.5 12s-3.4 5.2-9.5 5.2S2.5 12 2.5 12Z"></path>
+            <circle cx="12" cy="12" r="2.5"></circle>
+            <path class="eye-slash" d="M4 4 20 20"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="confirm-field" id="confirmField" hidden>
+        <label for="loginPasswordConfirm">Nhập lại mật khẩu</label>
+        <div class="password-field">
+          <input id="loginPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password">
+          <button class="password-toggle is-hidden" id="confirmPasswordToggle" type="button" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 12s3.4-5.2 9.5-5.2S21.5 12 21.5 12s-3.4 5.2-9.5 5.2S2.5 12 2.5 12Z"></path>
+              <circle cx="12" cy="12" r="2.5"></circle>
+              <path class="eye-slash" d="M4 4 20 20"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="login-error" id="loginError" role="alert" aria-live="polite"></p>
+      <button class="login-submit" id="authSubmit" type="submit">Đăng nhập</button>
+    </form>
+    <p class="login-demo" id="loginDemo">Tài khoản demo: datdepzai / 123123</p>
+    <button class="demo-fill" id="demoFill" type="button">Dùng tài khoản demo</button>
+  </section>
+</div>
+
+<div class="wrap" id="dashboardApp" hidden>
 
   <div class="top">
     <div class="brand">
@@ -127,7 +203,7 @@ body{
       <div class="orchard-picker" id="orchardPicker">
         <span class="orchard-current" id="orchardName">Vườn vải</span>
         <button class="orchard-picker-toggle" id="orchardPickerToggle" aria-haspopup="listbox" aria-expanded="false" aria-label="Thay đổi khu vực">
-          <span>Thay đổi khu vực</span><span class="chevron">⌄</span>
+          <span>Thay đổi khu vực</span>
         </button>
         <div class="orchard-menu" id="orchardMenu" role="listbox" hidden>
           <button type="button" data-orchard="vai" class="active" role="option">Vườn vải</button>
@@ -136,7 +212,10 @@ body{
         </div>
       </div>
     </div>
-    <button class="theme-toggle" id="themeBtn">Chế độ sáng</button>
+    <div class="top-actions">
+      <button class="logout-button" id="logoutBtn">Đăng xuất</button>
+      <button class="theme-toggle" id="themeBtn">Chế độ sáng</button>
+    </div>
   </div>
 
   <div class="status-bar">
@@ -165,8 +244,14 @@ body{
 
   <div class="two-col">
     <div class="panel">
-      <h2>Lịch sử 24 mẫu gần nhất</h2>
+      <h2 id="chartTitle">Lịch sử nhiệt độ · 24 mẫu gần nhất</h2>
       <div class="chart-wrap"><canvas id="histChart"></canvas></div>
+      <div class="metric-switch" role="tablist" aria-label="Chọn dữ liệu biểu đồ">
+        <button type="button" class="active" data-metric="temp" role="tab">Nhiệt độ</button>
+        <button type="button" data-metric="hum" role="tab">Độ ẩm không khí</button>
+        <button type="button" data-metric="soil" role="tab">Độ ẩm đất</button>
+        <button type="button" data-metric="light" role="tab">Ánh sáng</button>
+      </div>
     </div>
 
     <div>
@@ -231,14 +316,153 @@ body{
       <li>Mục &ldquo;Bản ghi chờ đồng bộ&rdquo; là số random khi chuyển sang Direct Mode, minh hoạ khái niệm &mdash; thực tế phải lấy từ firmware qua characteristic Status.</li>
       <li><b>Điều khiển bơm hoàn toàn là mô phỏng phía UI:</b> chưa gửi lệnh thật xuống relay. Logic tự động (so sánh độ ẩm đất với ngưỡng) và logic an toàn (tự tắt sau thời gian tối đa) là <b>giả định của mình</b> &mdash; nhóm cần thống nhất lại với A xem firmware có tự xử lý logic auto này luôn không, hay App chỉ gửi lệnh bật/tắt thô và mọi an toàn/logic nằm ở firmware.</li>
       <li>Thời gian tự tắt bơm demo rút gọn còn <b>15 giây</b> để xem hiệu ứng nhanh &mdash; thực tế nên là một khoảng phút do nhóm quyết định (ví dụ 10 phút).</li>
-      <li>Chưa có xác thực người dùng (đăng nhập) &mdash; giả định demo dùng chung 1 phiên, không phân quyền.</li>
+      <li>Xác thực người dùng hiện là <b>fake phía trình duyệt</b>, tài khoản đăng ký được lưu trong localStorage; chưa có server, mã hóa mật khẩu hay phân quyền thật.</li>
     </ul>
   </div>
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script>
+// ---------- đăng nhập và đăng ký fake cho bản demo ----------
+const loginScreen = document.getElementById('loginScreen');
+const dashboardApp = document.getElementById('dashboardApp');
+const loginForm = document.getElementById('loginForm');
+const loginUsername = document.getElementById('loginUsername');
+const loginPassword = document.getElementById('loginPassword');
+const loginPasswordConfirm = document.getElementById('loginPasswordConfirm');
+const passwordToggle = document.getElementById('passwordToggle');
+const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const demoFill = document.getElementById('demoFill');
+const loginTab = document.getElementById('loginTab');
+const registerTab = document.getElementById('registerTab');
+const confirmField = document.getElementById('confirmField');
+const authSubmit = document.getElementById('authSubmit');
+const authDescription = document.getElementById('authDescription');
+const loginDemo = document.getElementById('loginDemo');
+const DEMO_USERNAME = 'datdepzai';
+const DEMO_PASSWORD = '123123';
+let authMode = 'login';
+
+function togglePassword(input, button){
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  button.classList.toggle('is-hidden', !isHidden);
+  button.setAttribute('aria-label', isHidden ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+  button.setAttribute('title', isHidden ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+}
+
+passwordToggle.addEventListener('click', ()=>togglePassword(loginPassword, passwordToggle));
+confirmPasswordToggle.addEventListener('click', ()=>togglePassword(loginPasswordConfirm, confirmPasswordToggle));
+
+function getAccounts(){
+  try {
+    return JSON.parse(localStorage.getItem('orchard-accounts') || '{}');
+  } catch(e) {
+    return {};
+  }
+}
+
+function saveAccounts(accounts){
+  localStorage.setItem('orchard-accounts', JSON.stringify(accounts));
+}
+
+function showDashboard(){
+  loginScreen.hidden = true;
+  dashboardApp.hidden = false;
+}
+
+function showLogin(){
+  loginScreen.hidden = false;
+  dashboardApp.hidden = true;
+  loginForm.reset();
+  loginError.textContent = '';
+  loginUsername.focus();
+}
+
+function setAuthMode(mode){
+  authMode = mode;
+  const isRegister = mode === 'register';
+  loginTab.classList.toggle('active', !isRegister);
+  registerTab.classList.toggle('active', isRegister);
+  loginTab.setAttribute('aria-selected', String(!isRegister));
+  registerTab.setAttribute('aria-selected', String(isRegister));
+  confirmField.hidden = !isRegister;
+  loginPasswordConfirm.required = isRegister;
+  authSubmit.textContent = isRegister ? 'Tạo tài khoản' : 'Đăng nhập';
+  authDescription.textContent = isRegister ? 'Tạo tài khoản để bắt đầu theo dõi khu vườn.' : 'Đăng nhập để truy cập dịch vụ giám sát khu vườn.';
+  loginDemo.hidden = isRegister;
+  demoFill.hidden = isRegister;
+  loginError.textContent = '';
+}
+
+const accounts = getAccounts();
+if(accounts[DEMO_USERNAME] !== DEMO_PASSWORD){
+  accounts[DEMO_USERNAME] = DEMO_PASSWORD;
+  saveAccounts(accounts);
+}
+
+if(sessionStorage.getItem('orchard-auth') === 'true') showDashboard();
+else showLogin();
+
+loginTab.addEventListener('click', ()=>setAuthMode('login'));
+registerTab.addEventListener('click', ()=>setAuthMode('register'));
+
+loginForm.addEventListener('submit', event => {
+  event.preventDefault();
+  const username = loginUsername.value.trim().toLowerCase();
+  const password = loginPassword.value.trim();
+  const storedAccounts = getAccounts();
+
+  if(username.length < 3){
+    loginError.textContent = 'Tài khoản cần ít nhất 3 ký tự.';
+    return;
+  }
+
+  if(authMode === 'register'){
+    if(password.length < 6){
+      loginError.textContent = 'Mật khẩu cần ít nhất 6 ký tự.';
+      return;
+    }
+    if(password !== loginPasswordConfirm.value.trim()){
+      loginError.textContent = 'Mật khẩu nhập lại chưa khớp.';
+      return;
+    }
+    if(storedAccounts[username]){
+      loginError.textContent = 'Tài khoản này đã tồn tại.';
+      return;
+    }
+    storedAccounts[username] = password;
+    saveAccounts(storedAccounts);
+    sessionStorage.setItem('orchard-auth', 'true');
+    showDashboard();
+    return;
+  }
+
+  if(storedAccounts[username] !== password){
+    loginError.textContent = 'Tài khoản hoặc mật khẩu không đúng.';
+    loginPassword.value = '';
+    loginPassword.focus();
+    return;
+  }
+  sessionStorage.setItem('orchard-auth', 'true');
+  showDashboard();
+});
+
+demoFill.addEventListener('click', ()=>{
+  loginUsername.value = DEMO_USERNAME;
+  loginPassword.value = DEMO_PASSWORD;
+  loginError.textContent = '';
+  loginPassword.focus();
+});
+
+logoutBtn.addEventListener('click', ()=>{
+  sessionStorage.removeItem('orchard-auth');
+  setAuthMode('login');
+  showLogin();
+});
+
 // ---------- theme toggle: đặt đầu tiên, độc lập với mọi phần khác ----------
 const themeBtn = document.getElementById('themeBtn');
 themeBtn.addEventListener('click', ()=>{
@@ -265,34 +489,87 @@ const labels = Array.from({length:24}, (_,i)=> {
   return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
 });
 Object.values(orchardData).forEach(orchard => {
-  orchard.history = genHistory(24, orchard.historyBase, 3);
+  orchard.history = {
+    temp: genHistory(24, orchard.temp, 3),
+    hum: genHistory(24, orchard.hum, 8),
+    soil: genHistory(24, orchard.soil, 10),
+    light: genHistory(24, orchard.light, 12)
+  };
 });
 
-const ctx = document.getElementById('histChart').getContext('2d');
-let chart;
-try {
-  chart = new Chart(ctx, {
-    type:'line',
-    data:{ labels, datasets:[{
-      data:orchardData[selectedOrchard].history, borderColor:'#5FA777', backgroundColor:'rgba(95,167,119,.12)',
-      fill:true, tension:.35, pointRadius:0, borderWidth:2
-    }]},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false} },
-      scales:{
-        x:{ ticks:{ color:'#8fa285', maxTicksLimit:6, font:{family:'IBM Plex Mono', size:10} }, grid:{ display:false } },
-        y:{ ticks:{ color:'#8fa285', font:{family:'IBM Plex Mono', size:10} }, grid:{ color:'rgba(120,140,120,.12)' } }
-      }
+const canvas = document.getElementById('histChart');
+const ctx = canvas.getContext('2d');
+const chartTitle = document.getElementById('chartTitle');
+const metricButtons = document.querySelectorAll('.metric-switch button');
+const metricInfo = {
+  temp: { title:'Lịch sử nhiệt độ', unit:'°C', color:'#E3A857', minPadding:1 },
+  hum: { title:'Lịch sử độ ẩm không khí', unit:'%', color:'#65A9D6', min:0, max:100 },
+  soil: { title:'Lịch sử độ ẩm đất', unit:'%', color:'#8FCB81', min:0, max:100 },
+  light: { title:'Lịch sử ánh sáng', unit:'%', color:'#D9C46C', min:0, max:100 }
+};
+let selectedMetric = 'temp';
+
+function drawMetricChart(){
+  const metric = metricInfo[selectedMetric];
+  const values = orchardData[selectedOrchard].history[selectedMetric];
+  const width = canvas.clientWidth || 300;
+  const height = canvas.clientHeight || 180;
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.clearRect(0,0,width,height);
+
+  const pad = {top:16,right:12,bottom:38,left:38};
+  const plotWidth = width-pad.left-pad.right;
+  const plotHeight = height-pad.top-pad.bottom;
+  const dataMin = metric.min ?? Math.floor(Math.min(...values)-metric.minPadding);
+  const dataMax = metric.max ?? Math.ceil(Math.max(...values)+metric.minPadding);
+  const range = Math.max(1, dataMax-dataMin);
+  const x = index => pad.left + (index/(values.length-1))*plotWidth;
+  const y = value => pad.top + (1-(value-dataMin)/range)*plotHeight;
+
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(120,140,120,.16)';
+  ctx.fillStyle = '#8fa285';
+  for(let i=0;i<=4;i++){
+    const value = dataMin + (range/4)*i;
+    const yPos = y(value);
+    ctx.beginPath(); ctx.moveTo(pad.left,yPos); ctx.lineTo(width-pad.right,yPos); ctx.stroke();
+    ctx.fillText(value.toFixed(metric.unit === '°C' ? 1 : 0), 3, yPos+3);
+  }
+  for(let i=0;i<6;i++){
+    const fraction = i/5;
+    const index = Math.round((values.length-1)*fraction);
+    const labelX = pad.left + fraction*plotWidth;
+    ctx.textAlign = i === 0 ? 'left' : i === 5 ? 'right' : 'center';
+    ctx.fillText(labels[index], labelX, height-12);
+  }
+  ctx.textAlign = 'left';
+  ctx.strokeStyle = metric.color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  values.forEach((value,index)=> index ? ctx.lineTo(x(index),y(value)) : ctx.moveTo(x(index),y(value)));
+  ctx.stroke();
+  ctx.fillStyle = metric.color;
+  values.forEach((value,index)=>{
+    if(index % 4 === 0 || index === values.length-1){
+      ctx.beginPath(); ctx.arc(x(index),y(value),2.5,0,Math.PI*2); ctx.fill();
     }
   });
-} catch(e) {
-  // Nếu Chart.js không load được (mạng/CDN chặn), không để lỗi này
-  // làm hỏng các phần tương tác còn lại của trang (theme, pump...)
-  console.error('Không vẽ được biểu đồ lịch sử:', e);
-  ctx.canvas.insertAdjacentHTML('afterend',
-    '<div style="font-size:12.5px;color:var(--text-faint);padding:8px 0;">Không tải được thư viện biểu đồ (kiểm tra kết nối mạng).</div>');
+  chartTitle.textContent = metric.title+' · 24 mẫu gần nhất ('+metric.unit+')';
 }
+
+metricButtons.forEach(button => button.addEventListener('click', ()=>{
+  selectedMetric = button.dataset.metric;
+  metricButtons.forEach(item => item.classList.toggle('active', item === button));
+  metricButtons.forEach(item => item.setAttribute('aria-selected', String(item === button)));
+  drawMetricChart();
+}));
+
+window.addEventListener('resize', drawMetricChart);
+drawMetricChart();
 
 const orchardPicker = document.getElementById('orchardPicker');
 const orchardPickerToggle = document.getElementById('orchardPickerToggle');
@@ -314,10 +591,7 @@ function updateDashboardForOrchard(){
   autoSoilRef.textContent = orchard.soil;
   updateAutoPumpStatus(orchard.soil);
   orchardButtons.forEach(button => button.classList.toggle('active', button.dataset.orchard === selectedOrchard));
-  if(chart){
-    chart.data.datasets[0].data = orchard.history;
-    chart.update();
-  }
+  drawMetricChart();
 }
 
 function closeOrchardMenu(){
